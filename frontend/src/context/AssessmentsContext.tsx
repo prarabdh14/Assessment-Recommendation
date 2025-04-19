@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import axios from 'axios';
 import { Assessment } from '../types';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://127.0.0.1:5000/api';
 
 interface AssessmentsContextType {
   jobDescription: string;
@@ -40,82 +41,73 @@ export const AssessmentsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  interface ApiResponse {
+    success: boolean;
+    recommendations: any[];
+  }
+  
   const searchAssessments = async () => {
     if (jobDescription.trim() === '') {
       setError('Please enter a job description');
       return;
     }
-    
-    console.log('Starting assessment search...');
+  
     setIsLoading(true);
     setError(null);
-    
+  
     try {
-      console.log('Making API request to:', `${API_URL}/recommend`);
-      const response = await fetch(`${API_URL}/recommend`, {
-        method: 'POST',
+      const response = await axios.post<ApiResponse>(`${API_URL}/recommend`, {
+        job_description: jobDescription,
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        },
-        body: JSON.stringify({ job_description: jobDescription }),
+        }
       });
-
-      console.log('API Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
-        throw new Error(
-          `Failed to fetch recommendations: ${response.status} ${response.statusText}${
-            errorText ? ` - ${errorText}` : ''
-          }`
-        );
+  
+      const data = response.data;
+      console.log("API response:", data);
+  
+      if (!data.success) {
+        throw new Error('Server returned failure');
       }
-
-      const data = await response.json();
-      console.log('API Response data:', data);
-      
-      if (!data.recommendations || !Array.isArray(data.recommendations)) {
-        throw new Error('Invalid response format from server');
+  
+      if (!Array.isArray(data.recommendations)) {
+        throw new Error('Invalid or missing recommendations from server');
       }
-
-      // Transform the backend response to match our Assessment type
-      const transformedResults: Assessment[] = data.recommendations.map((rec: any) => {
-        console.log('Processing recommendation:', rec);
-        return {
-          id: rec.id || String(Math.random()),
-          title: rec.title || 'Unknown Assessment',
-          description: rec.description || '',
-          category: rec.category || 'General',
-          duration: rec.duration || 'Not specified',
-          skills: rec.skills || [],
-          benefits: rec.benefits || [],
-          suitableFor: rec.suitable_for || [],
-          imageUrl: rec.image_url || '',
-          jobLevel: rec.job_level || 'Not specified',
-          remoteTestingAvailable: rec.remote_testing_available || false,
-          relevanceScore: rec.similarity_score * 100, // Convert to percentage
-        };
-      });
-
-      console.log('Transformed results:', transformedResults);
+  
+      const transformedResults: Assessment[] = data.recommendations.map((rec: any) => ({
+        id: rec.id || String(Math.random()),
+        title: rec.title || 'Unknown Assessment',
+        description: rec.description || '',
+        category: rec.category || 'Assessment',
+        duration: typeof rec.duration === 'string' ? rec.duration : 'Not specified',
+        skills: Array.isArray(rec.skills) ? rec.skills : [],
+        benefits: Array.isArray(rec.benefits) ? rec.benefits : [],
+        suitableFor: Array.isArray(rec.suitableFor)
+          ? rec.suitableFor
+          : (Array.isArray(rec.suitable_for) ? rec.suitable_for : []),
+        imageUrl: rec.imageUrl || rec.image_url || '',
+        jobLevel: typeof rec.jobLevel === 'string' ? rec.jobLevel : 'Not specified',
+        remoteTestingAvailable: Boolean(rec.remoteTestingAvailable),
+        relevanceScore: typeof rec.similarity_score === 'number' ? rec.similarity_score * 100 : 0,
+      }));
+  
+      console.log("Transformed results:", transformedResults);
+  
       setResults(transformedResults);
       setHasSearched(true);
       addToSearchHistory(jobDescription);
-    } catch (err) {
-      console.error('Search error:', err);
-      setError(
-        err instanceof Error 
-          ? err.message 
-          : 'An unexpected error occurred while fetching recommendations. Please ensure the backend server is running.'
-      );
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || err.message || 'An unexpected error occurred.';
+      setError(errorMessage);
       setResults([]);
+      console.error("Error during search:", errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const resetSearch = () => {
     setHasSearched(false);
     setResults([]);

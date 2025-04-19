@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeftIcon, RefreshCw, ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useAssessments } from '../context/AssessmentsContext';
@@ -14,6 +14,10 @@ const Results: React.FC<ResultsProps> = ({ onNewSearch }) => {
   const { results, isLoading, jobDescription } = useAssessments();
   const [sortField, setSortField] = useState<SortField>('relevanceScore');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  useEffect(() => {
+    console.log('Results component received data:', results);
+  }, [results]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
