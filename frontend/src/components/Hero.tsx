@@ -12,19 +12,33 @@ const Hero: React.FC = () => {
     searchAssessments, 
     isLoading,
     hasSearched,
-    resetSearch
+    resetSearch,
+    error
   } = useAssessments();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with job description:', jobDescription);
+    
     if (jobDescription.trim() !== '') {
-      searchAssessments();
+      try {
+        await searchAssessments();
+        console.log('Search completed successfully');
+      } catch (err) {
+        console.error('Error during search:', err);
+      }
     }
   };
 
-  const handleHistoryClick = (query: string) => {
+  const handleHistoryClick = async (query: string) => {
+    console.log('History item clicked:', query);
     setJobDescription(query);
-    searchAssessments();
+    try {
+      await searchAssessments();
+      console.log('History search completed successfully');
+    } catch (err) {
+      console.error('Error during history search:', err);
+    }
   };
 
   return (
@@ -86,6 +100,12 @@ const Hero: React.FC = () => {
                   Find Assessments
                 </motion.button>
               </div>
+              
+              {error && (
+                <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+                  {error}
+                </div>
+              )}
             </motion.form>
             
             {searchHistory.length > 0 && (

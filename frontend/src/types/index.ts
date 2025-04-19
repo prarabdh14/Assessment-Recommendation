@@ -8,5 +8,7 @@ export interface Assessment {
   benefits: string[];
   suitableFor: string[];
   imageUrl: string;
-  relevanceScore?: number;
+  relevanceScore: number;
+  jobLevel: string;
+  remoteTestingAvailable: boolean;
 }

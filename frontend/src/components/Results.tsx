@@ -1,40 +1,49 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeftIcon, RefreshCw, FilterIcon } from 'lucide-react';
+import { ArrowLeftIcon, RefreshCw, ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useAssessments } from '../context/AssessmentsContext';
-import AssessmentCard from './AssessmentCard';
 
 interface ResultsProps {
   onNewSearch: () => void;
 }
 
+type SortField = 'relevanceScore' | 'title' | 'category' | 'duration' | 'jobLevel';
+type SortDirection = 'asc' | 'desc';
+
 const Results: React.FC<ResultsProps> = ({ onNewSearch }) => {
   const { results, isLoading, jobDescription } = useAssessments();
-  const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
-  
-  // Extract unique categories for filtering
-  const categories = Array.from(new Set(results.map(assessment => assessment.category)));
-  
-  // Filter results based on selected category
-  const filteredResults = activeFilter === 'all' 
-    ? results 
-    : results.filter(assessment => assessment.category === activeFilter);
+  const [sortField, setSortField] = useState<SortField>('relevanceScore');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-  const handleToggleExpand = (id: string) => {
-    setExpandedCardId(expandedCardId === id ? null : id);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
     }
   };
+
+  const sortedResults = [...results].sort((a, b) => {
+    const multiplier = sortDirection === 'asc' ? 1 : -1;
+    const fieldA = a[sortField];
+    const fieldB = b[sortField];
+
+    if (typeof fieldA === 'number' && typeof fieldB === 'number') {
+      return (fieldA - fieldB) * multiplier;
+    }
+    return String(fieldA).localeCompare(String(fieldB)) * multiplier;
+  });
+
+  const SortButton: React.FC<{ field: SortField; label: string }> = ({ field, label }) => (
+    <button
+      onClick={() => handleSort(field)}
+      className="flex items-center space-x-1 font-semibold hover:text-primary-600"
+    >
+      <span>{label}</span>
+      <ArrowUpDown className={`w-4 h-4 ${sortField === field ? 'text-primary-600' : 'text-gray-400'}`} />
+    </button>
+  );
 
   return (
     <motion.div 
@@ -44,54 +53,19 @@ const Results: React.FC<ResultsProps> = ({ onNewSearch }) => {
       exit={{ opacity: 0 }}
     >
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-          <div className="mb-4 md:mb-0">
-            <motion.button
-              onClick={onNewSearch}
-              className="mb-4 flex items-center text-primary-600 hover:text-primary-700 font-medium"
-              whileHover={{ x: -4 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
-              New Search
-            </motion.button>
-            <h2 className="text-2xl md:text-3xl font-bold mb-1">Top Assessment Matches</h2>
-            <p className="text-secondary-600">
-              Based on: "{jobDescription.length > 60 ? jobDescription.substring(0, 60) + '...' : jobDescription}"
-            </p>
-          </div>
-          
-          <div className="relative">
-            <div className="flex items-center flex-wrap border border-secondary-200 bg-white rounded-lg p-1 shadow-sm">
-              <button
-                onClick={() => setActiveFilter('all')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  activeFilter === 'all' 
-                    ? 'bg-primary-600 text-white' 
-                    : 'text-secondary-600 hover:bg-secondary-100'
-                }`}
-              >
-                All
-              </button>
-              {categories.map(category => (
-                <button
-                  key={category}
-                  onClick={() => setActiveFilter(category)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeFilter === category
-                      ? 'bg-primary-600 text-white' 
-                      : 'text-secondary-600 hover:bg-secondary-100'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-              <div className="md:hidden ml-auto">
-                <FilterIcon className="w-5 h-5 text-secondary-500" />
-              </div>
-            </div>
-          </div>
-        </div>
+        <motion.button
+          onClick={onNewSearch}
+          className="mb-4 flex items-center text-primary-600 hover:text-primary-700 font-medium"
+          whileHover={{ x: -4 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <ArrowLeftIcon className="w-4 h-4 mr-2" />
+          New Search
+        </motion.button>
+        <h2 className="text-2xl md:text-3xl font-bold mb-1">Top Assessment Matches</h2>
+        <p className="text-secondary-600">
+          Based on: "{jobDescription.length > 60 ? jobDescription.substring(0, 60) + '...' : jobDescription}"
+        </p>
       </div>
 
       {isLoading ? (
@@ -101,35 +75,97 @@ const Results: React.FC<ResultsProps> = ({ onNewSearch }) => {
         </div>
       ) : (
         <AnimatePresence>
-          {filteredResults.length > 0 ? (
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {filteredResults.map((assessment) => (
-                <AssessmentCard 
-                  key={assessment.id} 
-                  assessment={assessment} 
-                  isExpanded={expandedCardId === assessment.id}
-                  onToggleExpand={() => handleToggleExpand(assessment.id)}
-                />
-              ))}
-            </motion.div>
+          {sortedResults.length > 0 ? (
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <SortButton field="relevanceScore" label="Match %" />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <SortButton field="title" label="Assessment" />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <SortButton field="category" label="Category" />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <SortButton field="duration" label="Duration" />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <SortButton field="jobLevel" label="Job Level" />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Skills
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Remote
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sortedResults.slice(0, 10).map((assessment, index) => (
+                    <tr 
+                      key={assessment.id}
+                      className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {assessment.relevanceScore.toFixed(1)}%
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="text-sm font-medium text-gray-900">
+                            {assessment.title}
+                          </div>
+                          {assessment.description && (
+                            <div className="ml-2 text-sm text-gray-500">
+                              <ExternalLink className="w-4 h-4 cursor-pointer hover:text-primary-600" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-100 text-primary-800">
+                          {assessment.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assessment.duration}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assessment.jobLevel}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {assessment.skills.slice(0, 3).map((skill, i) => (
+                            <span key={i} className="px-2 py-1 text-xs rounded bg-secondary-100 text-secondary-800">
+                              {skill}
+                            </span>
+                          ))}
+                          {assessment.skills.length > 3 && (
+                            <span className="px-2 py-1 text-xs rounded bg-secondary-100 text-secondary-800">
+                              +{assessment.skills.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assessment.remoteTestingAvailable ? 'Yes' : 'No'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <motion.div 
               className="text-center py-16"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <p className="text-lg text-secondary-600">No assessments found for this filter.</p>
-              <button 
-                onClick={() => setActiveFilter('all')}
-                className="mt-4 btn btn-primary"
-              >
-                View All Assessments
-              </button>
+              <p className="text-lg text-secondary-600">No assessments found.</p>
             </motion.div>
           )}
         </AnimatePresence>

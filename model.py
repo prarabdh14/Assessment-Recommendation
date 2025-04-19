@@ -81,13 +81,18 @@ class AssessmentRecommender:
             assessment = self.assessments_df.iloc[idx]
             similarity_score = similarity_scores[0][idx]
             recommendations.append({
-                'Assessment Name': assessment['Assessment Name'],
-                'Job Level': assessment['Job Level'],
-                'Duration': assessment['Duration'],
-                'Remote Testing': assessment['Remote Testing'],
-                'Adaptive Support': assessment['Adaptive Support'],
-                'URL': assessment['URL'],
-                'Similarity Score': round(similarity_score * 100, 2)  # Convert to percentage
+                'id': str(idx),
+                'title': assessment['Assessment Name'],
+                'description': '',  # Add description if available in your dataset
+                'category': 'Assessment',  # Add category if available in your dataset
+                'duration': assessment['Duration'],
+                'skills': [],  # Add skills if available in your dataset
+                'benefits': [],  # Add benefits if available in your dataset
+                'suitableFor': [],  # Add suitable roles if available in your dataset
+                'imageUrl': '',  # Add image URL if available
+                'jobLevel': assessment['Job Level'],
+                'remoteTestingAvailable': assessment['Remote Testing'] == 'Yes',
+                'similarity_score': similarity_score
             })
         
         return recommendations
@@ -129,7 +134,7 @@ if __name__ == "__main__":
     recommendations = recommender.get_recommendations(test_description)
     print("\nTest Recommendations:")
     for i, rec in enumerate(recommendations, 1):
-        print(f"\n{i}. {rec['Assessment Name']}")
-        print(f"   Similarity Score: {rec['Similarity Score']}%")
-        print(f"   Job Level: {rec['Job Level']}")
-        print(f"   Duration: {rec['Duration']}") 
+        print(f"\n{i}. {rec['title']}")
+        print(f"   Similarity Score: {rec['similarity_score']}")
+        print(f"   Job Level: {rec['jobLevel']}")
+        print(f"   Duration: {rec['duration']}") 
