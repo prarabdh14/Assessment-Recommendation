@@ -1,5 +1,7 @@
 // API for assessment predictions
 
+import { BACKEND_URL } from "../config";
+
 export interface Assessment {
   name: string;
   url: string;
@@ -14,7 +16,7 @@ interface ApiResponse {
 
 export async function predictAssessment(jobDescription: string): Promise<Assessment[]> {
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/recommend', {
+    const response = await fetch(`${BACKEND_URL}/api/recommend`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
