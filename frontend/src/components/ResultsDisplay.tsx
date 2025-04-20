@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Info, List, BarChart2, Clock, Globe } from 'lucide-react';
+import { CheckCircle, Info, List, Clock, Globe, Link } from 'lucide-react';
 import type { Assessment } from '../services/api';
 
 interface ResultsDisplayProps {
@@ -8,13 +8,6 @@ interface ResultsDisplayProps {
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
   if (!results || results.length === 0) return null;
-  
-  // Sort by similarity score if available, otherwise use the original order
-  const sortedResults = [...results].sort((a, b) => 
-    b.similarity_score !== undefined && a.similarity_score !== undefined 
-      ? b.similarity_score - a.similarity_score 
-      : 0
-  );
   
   return (
     <div className="w-full max-w-2xl mx-auto mt-8 bg-white rounded-xl shadow-xl p-6 md:p-8 animate-fadeIn">
@@ -28,7 +21,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
         </p>
       </div>
       
-      {sortedResults[0] && (
+      {results[0] && (
         <div className="bg-primary-50 border border-primary-100 rounded-lg p-4 mb-6">
           <div className="flex items-start">
             <div className="mr-3 mt-1">
@@ -37,32 +30,19 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
             <div>
               <h3 className="font-semibold text-neutral-800">Top Recommended Assessment</h3>
               <p className="text-neutral-700">
-                <span className="font-medium">{sortedResults[0].title}</span>
+                <span className="font-medium">{results[0].name}</span>
               </p>
-              {sortedResults[0].description && (
-                <p className="text-sm text-neutral-600 mt-1">
-                  {sortedResults[0].description}
-                </p>
-              )}
               <div className="flex flex-wrap mt-2 text-sm text-neutral-600">
-                {sortedResults[0].duration && sortedResults[0].duration !== null && (
+                {results[0].duration && (
                   <div className="flex items-center mr-4 mt-1">
                     <Clock className="h-4 w-4 mr-1 text-primary-500" />
-                    <span>{sortedResults[0].duration}</span>
+                    <span>{results[0].duration}</span>
                   </div>
                 )}
-                {sortedResults[0].jobLevel && sortedResults[0].jobLevel !== null && (
-                  <div className="flex items-center mr-4 mt-1">
-                    <BarChart2 className="h-4 w-4 mr-1 text-primary-500" />
-                    <span>{sortedResults[0].jobLevel}</span>
-                  </div>
-                )}
-                {sortedResults[0].remoteTestingAvailable && (
-                  <div className="flex items-center mt-1">
-                    <Globe className="h-4 w-4 mr-1 text-primary-500" />
-                    <span>Remote Testing Available</span>
-                  </div>
-                )}
+                <div className="flex items-center mt-1">
+                  <Globe className="h-4 w-4 mr-1 text-primary-500" />
+                  <span>Remote Testing: {results[0].remote_testing}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -76,55 +56,43 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
         </h3>
         
         <div className="space-y-4">
-          {sortedResults.map((assessment, index) => (
+          {results.map((assessment, index) => (
             <div 
-              key={assessment.id} 
+              key={index} 
               className="p-4 border border-neutral-200 rounded-lg hover:border-primary-200 hover:bg-primary-50 transition-colors"
             >
               <div className="flex justify-between items-start">
-                <h4 className="font-medium text-neutral-800">{assessment.title}</h4>
+                <h4 className="font-medium text-neutral-800">{assessment.name}</h4>
                 <div className="bg-primary-100 text-primary-700 rounded-full h-6 w-6 flex items-center justify-center text-xs font-semibold">
                   {index + 1}
                 </div>
               </div>
               
               <div className="flex flex-wrap mt-2 text-sm text-neutral-600">
-                {assessment.duration && assessment.duration !== null && (
+                {assessment.duration && (
                   <div className="flex items-center mr-4 mt-1">
                     <Clock className="h-4 w-4 mr-1 text-primary-500" />
                     <span>{assessment.duration}</span>
                   </div>
                 )}
-                {assessment.jobLevel && assessment.jobLevel !== null && (
-                  <div className="flex items-center mr-4 mt-1">
-                    <BarChart2 className="h-4 w-4 mr-1 text-primary-500" />
-                    <span>{assessment.jobLevel}</span>
-                  </div>
-                )}
-                {assessment.remoteTestingAvailable && (
+                <div className="flex items-center mr-4 mt-1">
+                  <Globe className="h-4 w-4 mr-1 text-primary-500" />
+                  <span>Remote Testing: {assessment.remote_testing}</span>
+                </div>
+                {assessment.url && (
                   <div className="flex items-center mt-1">
-                    <Globe className="h-4 w-4 mr-1 text-primary-500" />
-                    <span>Remote Testing Available</span>
+                    <Link className="h-4 w-4 mr-1 text-primary-500" />
+                    <a 
+                      href={assessment.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:underline"
+                    >
+                      Assessment URL
+                    </a>
                   </div>
                 )}
               </div>
-              
-              {assessment.description && (
-                <p className="mt-2 text-sm text-neutral-600">{assessment.description}</p>
-              )}
-              
-              {assessment.skills && assessment.skills.length > 0 && (
-                <div className="mt-2">
-                  <h5 className="text-xs font-medium text-neutral-700">Skills Assessed:</h5>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {assessment.skills.map((skill, i) => (
-                      <span key={i} className="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>

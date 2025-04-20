@@ -1,18 +1,10 @@
-// Simulate backend API for assessment predictions
+// API for assessment predictions
 
 export interface Assessment {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  duration: string | number | null;
-  skills: string[];
-  benefits: string[];
-  suitableFor: string[];
-  imageUrl: string;
-  jobLevel: string | number | null;
-  remoteTestingAvailable: boolean;
-  similarity_score: number;
+  name: string;
+  url: string;
+  remote_testing: string;
+  duration: string;
 }
 
 interface ApiResponse {
@@ -41,7 +33,7 @@ export async function predictAssessment(jobDescription: string): Promise<Assessm
     // Parse the cleaned JSON
     const data: ApiResponse = JSON.parse(cleanedText);
     
-    if (!data.success) {
+    if (!data.success && !data.recommendations) {
       throw new Error('Failed to get assessment recommendations');
     }
     
