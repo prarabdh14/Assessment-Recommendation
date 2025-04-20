@@ -10,6 +10,8 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import { predictAssessment } from './services/api';
 import type { Assessment } from './services/api';
+import { Analytics } from "@vercel/analytics/react"
+
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
@@ -70,6 +72,7 @@ function App() {
       </main>
       
       <Footer />
+      <Analytics />
     </div>
   );
 }
