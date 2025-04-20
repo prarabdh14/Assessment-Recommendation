@@ -1,181 +1,113 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { SearchIcon, RefreshCw, HistoryIcon } from 'lucide-react';
-import { useAssessments } from '../context/AssessmentsContext';
-import Results from './Results';
+import { ChevronRight } from 'lucide-react';
 
 const Hero: React.FC = () => {
-  const { 
-    jobDescription, 
-    setJobDescription, 
-    searchHistory,
-    searchAssessments, 
-    isLoading,
-    hasSearched,
-    resetSearch,
-    error
-  } = useAssessments();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted with job description:', jobDescription);
-    
-    if (jobDescription.trim() !== '') {
-      try {
-        await searchAssessments();
-        console.log('Search completed successfully');
-      } catch (err) {
-        console.error('Error during search:', err);
-      }
-    }
-  };
-
-  const handleHistoryClick = async (query: string) => {
-    console.log('History item clicked:', query);
-    setJobDescription(query);
-    try {
-      await searchAssessments();
-      console.log('History search completed successfully');
-    } catch (err) {
-      console.error('Error during history search:', err);
-    }
-  };
-
   return (
-    <div className="min-h-screen w-full pt-20">
-      {!hasSearched ? (
-        <motion.div 
-          className="container mx-auto px-4 py-16 md:py-24"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <motion.h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Find the <span className="text-primary-600">Perfect Assessment</span> for Your Job
-            </motion.h1>
+    <section className="pt-32 pb-20 relative overflow-hidden">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center">
+          <div className="lg:w-1/2 mb-12 lg:mb-0">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-800 mb-6 leading-tight">
+              Find Your Perfect <span className="text-primary-500">SHL Assessment</span> Match
+            </h1>
             
-            <motion.p 
-              className="text-lg md:text-xl text-secondary-600 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              Enter your job description to discover the top 10 SHL assessments tailored to your hiring needs
-            </motion.p>
+            <p className="text-lg text-neutral-600 mb-8 max-w-xl">
+              Our AI analyzes job descriptions to predict which SHL assessments you should take, helping you prepare for the right tests and boost your chances of success.
+            </p>
             
-            <motion.form 
-              onSubmit={handleSubmit}
-              className="mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <div className="relative">
-                <textarea
-                  className="input min-h-36 p-5 text-base"
-                  placeholder="Paste your job description here..."
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  required
-                ></textarea>
-                
-                <motion.button 
-                  type="submit"
-                  className="btn btn-primary absolute bottom-4 right-4"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={isLoading || jobDescription.trim() === ''}
-                >
-                  {isLoading ? (
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <SearchIcon className="w-5 h-5 mr-2" />
-                  )}
-                  Find Assessments
-                </motion.button>
-              </div>
-              
-              {error && (
-                <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-                  {error}
-                </div>
-              )}
-            </motion.form>
-            
-            {searchHistory.length > 0 && (
-              <motion.div
-                className="mt-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a 
+                href="#assessment-form" 
+                className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors shadow-md flex items-center justify-center"
               >
-                <div className="flex items-center justify-center mb-3 text-sm text-secondary-500">
-                  <HistoryIcon className="w-4 h-4 mr-2" />
-                  <span>Recent Searches</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {searchHistory.map((query, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => handleHistoryClick(query)}
-                      className="py-1 px-3 bg-secondary-100 hover:bg-secondary-200 rounded-full text-sm text-secondary-700 transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {query.length > 30 ? query.substring(0, 30) + '...' : query}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                Find Your Assessment
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </a>
+              
+              <a 
+                href="#how-it-works" 
+                className="px-6 py-3 bg-white text-primary-500 border border-primary-500 rounded-lg hover:bg-primary-50 transition-colors flex items-center justify-center"
+              >
+                Learn More
+              </a>
+            </div>
+            
+            <div className="mt-8 flex items-center space-x-4">
+              <div className="flex -space-x-2">
+                <img 
+                  src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=2" 
+                  alt="User" 
+                  className="w-10 h-10 rounded-full border-2 border-white"
+                />
+                <img 
+                  src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=2" 
+                  alt="User" 
+                  className="w-10 h-10 rounded-full border-2 border-white"
+                />
+                <img 
+                  src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=2" 
+                  alt="User" 
+                  className="w-10 h-10 rounded-full border-2 border-white"
+                />
+              </div>
+              <div className="text-sm text-neutral-600">
+                Helping <span className="font-semibold">10,000+</span> candidates find their perfect assessment match
+              </div>
+            </div>
           </div>
           
-          <motion.div 
-            className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            {[
-              {
-                title: "Expert Assessments",
-                description: "Access SHL's library of scientifically validated assessments trusted by Fortune 500 companies",
-                icon: "🎯"
-              },
-              {
-                title: "Tailored Matching",
-                description: "Find the exact assessments that match your job requirements and skills needed",
-                icon: "🔍"
-              },
-              {
-                title: "Hire With Confidence",
-                description: "Make data-driven hiring decisions with assessments proven to predict job performance",
-                icon: "📊"
-              }
-            ].map((feature, index) => (
-              <motion.div 
-                key={index}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-                whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)" }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="text-3xl mb-3">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-secondary-600">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-      ) : (
-        <Results onNewSearch={() => resetSearch()} />
-      )}
-    </div>
+          <div className="lg:w-1/2 lg:pl-12">
+            <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-neutral-200">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-primary-500"></div>
+              <div className="p-6">
+                <div className="flex space-x-2 absolute top-4 left-4">
+                  <div className="w-3 h-3 rounded-full bg-neutral-300"></div>
+                  <div className="w-3 h-3 rounded-full bg-neutral-300"></div>
+                  <div className="w-3 h-3 rounded-full bg-neutral-300"></div>
+                </div>
+                
+                <div className="pt-8 pb-4">
+                  <h3 className="text-lg font-semibold text-neutral-800 mb-4">Assessment Recommendation</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-neutral-50 p-4 rounded-lg">
+                      <p className="text-sm text-neutral-700">
+                        <span className="font-semibold block mb-1">Job Description Analysis:</span>
+                        Senior Financial Analyst position with focus on data analysis and reporting
+                      </p>
+                    </div>
+                    
+                    <div className="bg-neutral-50 p-4 rounded-lg">
+                      <p className="text-sm text-neutral-700">
+                        <span className="font-semibold block mb-1">Recommended Primary Assessment:</span>
+                        <span className="text-primary-600">Numerical Reasoning (87% match)</span>
+                      </p>
+                      <div className="mt-2">
+                        <div className="h-2 w-full bg-neutral-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-500 rounded-full" style={{ width: '87%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
+                      <p className="text-sm text-neutral-700">
+                        <span className="font-semibold block mb-1">Additional Recommended Assessments:</span>
+                        <span className="block text-neutral-600">Verbal Reasoning (54% match)</span>
+                        <span className="block text-neutral-600">Inductive Reasoning (32% match)</span>
+                        <span className="block text-neutral-600">Situational Judgement (19% match)</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-100 rounded-full -mr-32 -mb-32 z-0"></div>
+      <div className="absolute top-1/4 left-0 w-48 h-48 bg-primary-50 rounded-full -ml-24 z-0"></div>
+    </section>
   );
 };
 
